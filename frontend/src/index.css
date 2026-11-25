@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Browser surfaces belong to the design: selection, focus, scrollbars. */
+  ::selection {
+    @apply bg-rose-500/25 text-slate-900;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand/50 ring-offset-1 ring-offset-white;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.slate.300') transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full border-2 border-solid border-transparent bg-slate-300 bg-clip-content;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-400 bg-clip-content;
+  }
+
+  /* Data cells read as data. */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /* One DOM per row, reflowed by grid areas instead of duplicated markup. */
+  .email-grid {
+    display: grid;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'email status'
+      'subject subject'
+      'time action';
+  }
+
+  @media (min-width: 640px) {
+    .email-grid {
+      gap: 0.75rem;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.6fr) minmax(0, 1fr) 7rem 5.5rem;
+      grid-template-areas: 'email subject time status action';
+    }
+  }
+
+  .eg-email {
+    grid-area: email;
+    min-width: 0;
+  }
+
+  .eg-subject {
+    grid-area: subject;
+    min-width: 0;
+  }
+
+  .eg-time {
+    grid-area: time;
+    min-width: 0;
+  }
+
+  .eg-status {
+    grid-area: status;
+  }
+
+  .eg-action {
+    grid-area: action;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

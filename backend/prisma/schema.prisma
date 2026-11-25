@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum EmailStatus {
+  SCHEDULED
+  SENT
+  FAILED
+  RATE_LIMITED
+  CANCELLED
+}
+
+model User {
+  id           String    @id @default(uuid())
+  googleId     String    @unique
+  email        String    @unique
+  name         String?
+  avatarUrl    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  senders      Sender[]
+  emails       Email[]
+  slack        SlackConnection?
+}
+
+model SlackConnection {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  teamId      String?
+  teamName    String?
+  botToken    String
+  channelId   String
+  channelName String?
+  incomingWebhookUrl String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Sender {
+  id           String   @id @default(uuid())
+  userId       String
+  name         String
+  email        String
+  smtpHost     String
+  smtpPort     Int      @default(587)
+  smtpSecure   Boolean  @default(false)
+  smtpUser     String
+  smtpPass     String
+  hourlyLimit  Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emails Email[]
+
+  @@unique([userId, email])
+}
+
+model Email {
+  id             String      @id @default(uuid())
+  userId         String
+  senderId       String
+  toEmail        String
+  subject        String
+  body           String
+  scheduledAt    DateTime
+  status         EmailStatus @default(SCHEDULED)
+  sentAt         DateTime?
+  error          String?
+  attempts       Int         @default(0)
+  bullJobId      String?
+  messageId      String?
+  previewUrl     String?
+  idempotencyKey String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sender Sender @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@unique([idempotencyKey])
+  @@index([userId, status])
+  @@index([senderId, status])
+  @@index([status, scheduledAt])
+}
